@@ -1,0 +1,89 @@
+#!/bin/sh
+
+[ -f ~/.gitmanrc ] && source ~/.gitmanrc
+
+[ -z "$DIR" ] && readonly DIR=~/.gitman
+[ -z "$LIST" ] && readonly LIST=~/.gitman/list
+[ -z "$REPOSITORIES" ] && readonly REPOSITORIES=https://github.com/temeteke
+
+function usage {
+	cat <<-EOT
+		Usage: $(basename $0) <command> [program]...
+
+		Commands:
+		  install
+		  update
+		  uninstall
+		  help
+	EOT
+}
+
+[ $# -eq 0 ] && usage && exit 1
+
+mkdir -p $DIR && cd $DIR
+
+command=$1
+shift
+programs=$*
+
+[ ! -f $LIST ] && touch $LIST
+
+case $command in
+	install )
+		for program in $programs; do
+			count=0
+
+			# check $LIST
+			if grep $program $LIST > /dev/null; then
+				echo "$program is already installed." 1>&2
+				continue
+			fi
+
+			# install
+			for repo in $REPOSITORIES; do
+				dir=${program}_$(echo $repo | sed 's|^.*://||' | sed 's|[:/.]|_|g')
+				git clone $repo/${program}.git $dir && count=$(expr $count + 1) && (cd $dir && make && make install)
+			done
+
+			# add $program to $LIST
+			[ $count -gt 0 ] && (echo $program >> $LIST)
+		done
+		;;
+	update )
+		[ $# -eq 0 ] && programs=$(cat $LIST)
+		for program in $programs; do
+			# check $LIST
+			if grep -v $program $LIST > /dev/null; then
+				echo "$program is not installed." 1>&2
+				continue
+			fi
+
+			# update
+			for repo in $REPOSITORIES; do
+				dir=${program}_$(echo $repo | sed 's|^.*://||' | sed 's|[:/.]|_|g')
+				(cd $dir && git pull && make && make install)
+			done
+		done
+		;;
+	uninstall )
+		for program in $programs; do
+			# check $LIST
+			if grep -v $program $LIST > /dev/null; then
+				echo "$program is not installed." 1>&2
+				continue
+			fi
+
+			# uninstall
+			for repo in $REPOSITORIES; do
+				dir=${program}_$(echo $repo | sed 's|^.*://||' | sed 's|[:/.]|_|g')
+				(cd $dir && make uninstall)
+			done
+		done
+		;;
+	help )
+		usage && exit 0
+		;;
+	* )
+		usage && exit 1
+		;;
+esac
