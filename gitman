@@ -1,9 +1,9 @@
 #!/bin/sh
 
-[ -f ~/.gitmanrc ] && source ~/.gitmanrc
+[ -f $HOME/gitmanrc ] && source $HOME/.gitmanrc
 
-[ -z "$DIR" ] && readonly DIR=~/.gitman
-[ -z "$LIST" ] && readonly LIST=~/.gitman/list
+[ -z "$DIR" ] && readonly DIR="$HOME/gitman"
+[ -z "$LIST" ] && readonly LIST=$DIR/list
 [ -z "$REPOSITORIES" ] && readonly REPOSITORIES=https://github.com/temeteke
 
 usage() {
