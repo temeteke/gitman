@@ -6,7 +6,7 @@
 [ -z "$LIST" ] && readonly LIST=~/.gitman/list
 [ -z "$REPOSITORIES" ] && readonly REPOSITORIES=https://github.com/temeteke
 
-function usage {
+usage() {
 	cat <<-EOT
 		Usage: $(basename $0) <command> [program]...
 
