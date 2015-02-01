@@ -64,6 +64,7 @@ case $command in
 			# update
 			for repo in $REPOSITORIES; do
 				dir=${program}_$(echo $repo | sed 's|^.*://||' | sed 's|[:/.]|_|g')
+				[ -d $dir ] || continue
 				(cd $dir && git pull && make && make install) || exit 1
 			done
 		done
