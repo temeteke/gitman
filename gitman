@@ -42,7 +42,10 @@ case $command in
 			# install
 			for repo in $REPOSITORIES; do
 				dir=${program}_$(echo $repo | sed 's|^.*://||' | sed 's|[:/.]|_|g')
-				git clone $repo/${program}.git $dir && count=$(expr $count + 1) && (cd $dir && make && make install) || exit 1
+				cmd="git clone $repo/${program}.git $dir"
+				echo "${cmd}"
+				eval $cmd || continue
+				count=$(expr $count + 1) && (cd $dir && make && make install) || exit 1
 			done
 
 			# add $program to $LIST
