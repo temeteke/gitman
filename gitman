@@ -45,7 +45,7 @@ case $command in
 				cmd="git clone $repo/${program}.git $dir"
 				echo "${cmd}"
 				eval $cmd || continue
-				count=$(expr $count + 1) && (cd $dir && make && make install) || exit 1
+				count=$(expr $count + 1) && (cd $dir && make install) || exit 1
 			done
 
 			# add $program to $LIST
@@ -65,7 +65,7 @@ case $command in
 			for repo in $REPOSITORIES; do
 				dir=${program}_$(echo $repo | sed 's|^.*://||' | sed 's|[:/.]|_|g')
 				[ -d $dir ] || continue
-				(cd $dir && git pull && make && make install) || exit 1
+				(cd $dir && git pull && make install) || exit 1
 			done
 		done
 		;;
