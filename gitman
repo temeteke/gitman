@@ -14,6 +14,7 @@ usage() {
 		  install
 		  update
 		  uninstall
+		  show
 		  help
 	EOT
 }
@@ -87,6 +88,9 @@ case $command in
 			# remove $program from list
 			sed -i -e '/^'$program'$/d' $LIST
 		done
+		;;
+	show )
+		[ -f $LIST ] && cat $LIST
 		;;
 	help )
 		usage && exit 0
