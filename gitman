@@ -1,6 +1,6 @@
 #!/bin/sh
 
-[ -f $HOME/.gitmanrc ] && source $HOME/.gitmanrc
+[ -f $HOME/.gitmanrc ] && . $HOME/.gitmanrc
 
 [ -z "$DIR" ] && readonly DIR="$HOME/.gitman"
 [ -z "$LIST" ] && readonly LIST=$DIR/list
