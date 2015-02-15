@@ -43,7 +43,9 @@ case $command in
 			# install
 			for repo in $REPOSITORIES; do
 				dir=${program}_$(echo $repo | sed 's|^.*://||' | sed 's|[:/.]|_|g')
-				cmd="git clone $repo/${program}.git $dir"
+				[ -d $dir ] \
+					&& cmd="(cd $dir && git pull)" \
+					|| cmd="git clone $repo/${program}.git $dir"
 				echo "${cmd}"
 				eval $cmd || continue
 				count=$(expr $count + 1) && (cd $dir && make install) || exit 1
@@ -73,7 +75,7 @@ case $command in
 	uninstall )
 		for program in $programs; do
 			# check $LIST
-			if grep -v $program $LIST > /dev/null; then
+			if ! grep -x $program $LIST > /dev/null; then
 				echo "$program is not installed." 1>&2
 				continue
 			fi
@@ -81,7 +83,7 @@ case $command in
 			# uninstall
 			for repo in $REPOSITORIES; do
 				dir=${program}_$(echo $repo | sed 's|^.*://||' | sed 's|[:/.]|_|g')
-				(cd $dir && make uninstall) || exit 1
+				[ -d $dir ] && (cd $dir && make uninstall || exit 1)
 				rm -rf $dir
 			done
 
