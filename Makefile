@@ -1,6 +1,13 @@
+BINDIR := ~/bin
+
 .PHONY: all install uninstall
 all:
-install:
-	ln -fs ${PWD}/gitman ~/bin/
+
+install: $(BINDIR)
+	cp gitman $(BINDIR)/
+
 uninstall:
-	rm ~/bin/gitman
+	rm $(BINDIR)/gitman
+
+$(BINDIR):
+	mkdir $(BINDIR)
