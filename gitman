@@ -3,9 +3,6 @@
 [ -z "$DIR" ] && readonly DIR="$HOME/.gitman"
 [ -z "$LIST" ] && readonly LIST=$DIR/list
 
-IFS="
-"
-
 myeval() {
     [ -n "$verbose" ] && echo "$*" >&2
     [ -n "$dryrun" ]  || eval "$*"
@@ -25,7 +22,7 @@ usage() {
 }
 
 hash() {
-	echo $* | md5sum | awk '{print $1}'
+	echo $* | md5sum | cut -d' ' -f1
 }
 
 is_added_repository() {
@@ -71,9 +68,11 @@ case $command in
 		echo "$repository $args" >> $LIST
 		;;
 	update )
+		(
+		IFS=$'\n'
 		for line in $(cat $LIST); do
-			repository=$(echo $line | awk '{print $1}')
-			args=$(echo $line | awk '{print $2}')
+			repository=$(echo $line | cut -d' ' -f1)
+			args=$(echo $line | cut -d' ' -f2-)
 
 			# check $LIST
 			if ! is_added_repository $repository; then
@@ -86,6 +85,7 @@ case $command in
 			echo "$repository $args"
 			myeval "(cd $dir && git pull && $args)" || exit 1
 		done
+		)
 		;;
 	remove )
 		repository=$1
