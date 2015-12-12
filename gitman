@@ -108,7 +108,7 @@ case $command in
 		fi
 
 		# remove $repository from list
-		$(awk '$1!="'$repository'" {print $1}' $LIST) > $LIST
+		echo "$(awk '$1!="'$repository'" {print}' $LIST)" > $LIST
 		;;
 	list )
 		[ -f $LIST ] && cat $LIST
