@@ -1,97 +1,116 @@
 #!/bin/sh
 
-[ -f $HOME/.gitmanrc ] && . $HOME/.gitmanrc
-
 [ -z "$DIR" ] && readonly DIR="$HOME/.gitman"
 [ -z "$LIST" ] && readonly LIST=$DIR/list
-[ -z "$REPOSITORIES" ] && readonly REPOSITORIES=https://github.com/temeteke
+
+IFS="
+"
+
+myeval() {
+    [ -n "$verbose" ] && echo "$*" >&2
+    [ -n "$dryrun" ]  || eval "$*"
+}
 
 usage() {
 	cat <<-EOT
-		Usage: $(basename $0) <command> [program]...
+		usage: $(basename $0) [-nv] <command> <repository> [<args>]
 
 		Commands:
-		  install
-		  update
-		  uninstall
-		  show
-		  help
+		   add
+		   update
+		   remove
+		   list
+		   help
 	EOT
 }
 
-[ $# -eq 0 ] && usage && exit 1
+hash() {
+	echo $* | md5sum | awk '{print $1}'
+}
 
-mkdir -p $DIR && cd $DIR
+is_added_repository() {
+	[ -n "$(awk '$1=="'$*'"' list)" ]
+}
+
+while getopts "nv" opt; do
+    case $opt in
+        n) dryrun=1;;
+        v) verbose=1;;
+    esac
+done
+
+shift $(( $OPTIND - 1 ))
 
 command=$1
 shift
-programs=$*
 
+mkdir -p $DIR && cd $DIR
 [ ! -f $LIST ] && touch $LIST
 
 case $command in
-	install )
-		for program in $programs; do
-			count=0
+	add )
+		repository=$1
+		shift
 
-			# check $LIST
-			if grep -x $program $LIST > /dev/null; then
-				echo "$program is already installed." 1>&2
-				continue
-			fi
+		[ $# -eq 0 ] && usage && exit 1
+		args=$*
 
-			# install
-			for repo in $REPOSITORIES; do
-				dir=${program}_$(echo $repo | sed 's|^.*://||' | sed 's|[:/.]|_|g')
-				[ -d $dir ] \
-					&& cmd="(cd $dir && git pull)" \
-					|| cmd="git clone $repo/${program}.git $dir"
-				echo "${cmd}"
-				eval $cmd || continue
-				count=$(expr $count + 1) && (cd $dir && make install) || exit 1
-			done
+		# check $LIST
+		if is_added_repository $repository; then
+			echo "$repository is already added." 1>&2
+			exit 1
+		fi
 
-			# add $program to $LIST
-			[ $count -gt 0 ] && (echo $program >> $LIST)
-		done
+		# add
+		dir=$(hash "$repository")
+		[ -d $dir ] \
+			&& myeval "(cd $dir && git pull && $args)" \
+			|| myeval "git clone ${repository} $dir && (cd $dir && $args)"
+
+		# add $repository to $LIST
+		echo "$repository $args" >> $LIST
 		;;
 	update )
-		[ $# -eq 0 ] && programs=$(cat $LIST)
-		for program in $programs; do
+		for line in $(cat $LIST); do
+			repository=$(echo $line | awk '{print $1}')
+			args=$(echo $line | awk '{print $2}')
+
 			# check $LIST
-			if ! grep -x $program $LIST > /dev/null; then
-				echo "$program is not installed." 1>&2
-				continue
+			if ! is_added_repository $repository; then
+				echo "$repository is not added." 1>&2
+				exit 1
 			fi
 
 			# update
-			for repo in $REPOSITORIES; do
-				dir=${program}_$(echo $repo | sed 's|^.*://||' | sed 's|[:/.]|_|g')
-				[ -d $dir ] || continue
-				(cd $dir && git pull && make install) || exit 1
-			done
+			dir=$(hash "$repository")
+			echo "$repository $args"
+			myeval "(cd $dir && git pull && $args)" || exit 1
 		done
 		;;
-	uninstall )
-		for program in $programs; do
-			# check $LIST
-			if ! grep -x $program $LIST > /dev/null; then
-				echo "$program is not installed." 1>&2
-				continue
-			fi
+	remove )
+		repository=$1
+		shift
 
-			# uninstall
-			for repo in $REPOSITORIES; do
-				dir=${program}_$(echo $repo | sed 's|^.*://||' | sed 's|[:/.]|_|g')
-				[ -d $dir ] && (cd $dir && make uninstall || exit 1)
-				rm -rf $dir
-			done
+		args=$*
 
-			# remove $program from list
-			sed -i -e '/^'$program'$/d' $LIST
-		done
+		# check $LIST
+		if ! is_added_repository $repository; then
+			echo "$repository is not added." 1>&2
+			exit 1
+		fi
+
+		# remove
+		dir=$(hash "$repository")
+		if [ -n "$args" ]; then
+			myeval "(cd $dir && $args) && rm -rf $dir" || exit 1
+		else
+			myeval "rm -rf $dir" || exit 1
+		fi
+
+		# remove $repository from list
+		$(awk '$1!="'$repository'" {print $1}' $LIST) > $LIST
 		;;
-	show )
+	list )
 		[ -f $LIST ] && cat $LIST
 		;;
 	help )
