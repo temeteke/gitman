@@ -65,7 +65,7 @@ case $command in
 			|| myeval "git clone ${repository} $dir && (cd $dir && $args)"
 
 		# add $repository to $LIST
-		echo "$repository $args" >> $LIST
+		[ $? -eq 0 ] && echo "$repository $args" >> $LIST
 		;;
 	update )
 		(
