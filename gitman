@@ -37,17 +37,15 @@ while getopts "nv" opt; do
 done
 
 shift $(( $OPTIND - 1 ))
-
 command=$1
-shift
 
 mkdir -p $DIR && cd $DIR
 [ ! -f $LIST ] && touch $LIST
 
 case $command in
 	add )
-		repository=$1
 		shift
+		repository=$1
 
 		[ $# -eq 0 ] && usage && exit 1
 		args=$*
@@ -88,9 +86,9 @@ case $command in
 		)
 		;;
 	remove )
+		shift
 		repository=$1
 		shift
-
 		args=$*
 
 		# check $LIST
