@@ -61,7 +61,7 @@ case $command in
 		dir=$(hash "$repository")
 		[ -d $dir ] \
 			&& myeval "(cd $dir && git pull && $args)" \
-			|| myeval "git clone ${repository} $dir && (cd $dir && $args)"
+			|| myeval "git clone --depth 1 ${repository} $dir && (cd $dir && $args)"
 
 		# add $repository to $LIST
 		[ $? -eq 0 ] && echo "$repository $args" >> $LIST
