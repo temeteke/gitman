@@ -117,7 +117,15 @@ case $command in
 		echo "$(awk '$1!="'$repository'" {print}' $LIST)" > $LIST
 		;;
 	list )
-		[ -f $LIST ] && cat $LIST
+		(
+		IFS='
+		'
+		for line in $(cat $LIST); do
+			repository=$(echo $line | cut -d' ' -f1)
+			args=$(echo $line | cut -d' ' -f2-)
+			echo $DIR/$(hash $repository) $repository $args
+		done
+		)
 		;;
 	help )
 		usage && exit 0
