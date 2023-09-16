@@ -4,10 +4,10 @@ BINDIR := ~/bin
 all:
 
 install: $(BINDIR)
-	cp gitman $(BINDIR)/
+	cp -a gitman $(BINDIR)/
 
 uninstall:
-	rm $(BINDIR)/gitman
+	rm -f $(BINDIR)/gitman
 
 $(BINDIR):
-	mkdir $(BINDIR)
+	mkdir -p $(BINDIR)
