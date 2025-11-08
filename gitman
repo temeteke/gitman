@@ -23,16 +23,16 @@ usage() {
 
 hash() {
 	if which md5sum > /dev/null; then
-		echo $* | md5sum | cut -d' ' -f1
+		echo "$*" | md5sum | cut -d' ' -f1
 	elif which md5 > /dev/null; then
-		echo $* | md5
+		echo "$*" | md5
 	else
-		basename $*
+		basename "$*"
 	fi
 }
 
 is_added_repository() {
-	[ -n "$(awk '$1=="'$*'"' list)" ]
+	[ -n "$(awk '$1=="'"$*"'"' "$LIST")" ]
 }
 
 while getopts "nv" opt; do
@@ -45,8 +45,8 @@ done
 shift $(( $OPTIND - 1 ))
 command=$1
 
-mkdir -p $DIR && cd $DIR
-[ ! -f $LIST ] && touch $LIST
+mkdir -p "$DIR" && cd "$DIR"
+[ ! -f "$LIST" ] && touch "$LIST"
 
 case $command in
 	add )
@@ -65,23 +65,23 @@ case $command in
 
 		# add
 		dir=$(hash "$repository")
-		[ -d $dir ] \
-			&& myeval "(cd $dir && git pull && $args)" \
-			|| myeval "git clone --depth 1 ${repository} $dir && (cd $dir && $args)"
+		[ -d "$dir" ] \
+			&& myeval "(cd \"$dir\" && git pull && $args)" \
+			|| myeval "git clone --depth 1 ${repository} \"$dir\" && (cd \"$dir\" && $args)"
 
 		# add $repository to $LIST
-		[ $? -eq 0 ] && echo "$repository $args" >> $LIST
+		[ $? -eq 0 ] && echo "$repository $args" >> "$LIST"
 		;;
 	update )
 		(
 		IFS='
 		'
-		for line in $(cat $LIST); do
-			repository=$(echo $line | cut -d' ' -f1)
-			args=$(echo $line | cut -d' ' -f2-)
+		for line in $(cat "$LIST"); do
+			repository=$(echo "$line" | cut -d' ' -f1)
+			args=$(echo "$line" | cut -d' ' -f2-)
 
 			# check $LIST
-			if ! is_added_repository $repository; then
+			if ! is_added_repository "$repository"; then
 				echo "$repository is not added." 1>&2
 				exit 1
 			fi
@@ -89,7 +89,7 @@ case $command in
 			# update
 			dir=$(hash "$repository")
 			echo "$repository $args"
-			myeval "(cd $dir && git pull && $args)" || exit 1
+			myeval "(cd \"$dir\" && git pull && $args)" || exit 1
 		done
 		)
 		;;
@@ -100,7 +100,7 @@ case $command in
 		args=$*
 
 		# check $LIST
-		if ! is_added_repository $repository; then
+		if ! is_added_repository "$repository"; then
 			echo "$repository is not added." 1>&2
 			exit 1
 		fi
@@ -108,22 +108,22 @@ case $command in
 		# remove
 		dir=$(hash "$repository")
 		if [ -n "$args" ]; then
-			myeval "(cd $dir && $args) && rm -rf $dir" || exit 1
+			myeval "(cd \"$dir\" && $args) && rm -rf \"$dir\"" || exit 1
 		else
-			myeval "rm -rf $dir" || exit 1
+			myeval "rm -rf \"$dir\"" || exit 1
 		fi
 
 		# remove $repository from list
-		echo "$(awk '$1!="'$repository'" {print}' $LIST)" > $LIST
+		awk '$1!="'"$repository"'" {print}' "$LIST" > "$LIST.tmp" && mv "$LIST.tmp" "$LIST"
 		;;
 	list )
 		(
 		IFS='
 		'
-		for line in $(cat $LIST); do
-			repository=$(echo $line | cut -d' ' -f1)
-			args=$(echo $line | cut -d' ' -f2-)
-			echo $DIR/$(hash $repository) $repository $args
+		for line in $(cat "$LIST"); do
+			repository=$(echo "$line" | cut -d' ' -f1)
+			args=$(echo "$line" | cut -d' ' -f2-)
+			echo "$DIR/$(hash "$repository")" "$repository" $args
 		done
 		)
 		;;
