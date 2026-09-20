@@ -7,7 +7,8 @@ When you update repository, registered command is executed.
 
 	gitman add <repository> <command>
 	gitman update
-	gitman remove <repository> <command>
+	gitman run <repository> <command>
+	gitman remove <repository> [<command>]
 
 ## Example
 
@@ -19,6 +20,10 @@ Update
 
 	gitman update
 
-Uninstall
+Run a command in the cloned repository
+
+	gitman run https://github.com/temeteke/vim.git make uninstall
+
+Uninstall and remove
 
 	gitman remove https://github.com/temeteke/vim.git make uninstall
