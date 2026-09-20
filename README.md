@@ -3,6 +3,22 @@
 gitman is a tool to get git repository and execute some command.
 When you update repository, registered command is executed.
 
+## Installation
+
+	make install
+
+This installs:
+
+	~/bin/gitman
+	${XDG_DATA_HOME:-~/.local/share}/bash-completion/completions/gitman
+
+If `XDG_DATA_HOME` is not set, the Bash completion is installed under
+`~/.local/share/bash-completion/completions/`.
+
+To uninstall:
+
+	make uninstall
+
 ## Usage
 
 	gitman add <repository> <command>
@@ -28,11 +44,8 @@ Uninstall and remove
 
 	gitman remove https://github.com/temeteke/vim.git make uninstall
 
-
 ## Bash completion
 
-Source the completion script from your Bash configuration:
+Bash completion is installed automatically by `make install`.
 
-	source /path/to/gitman/completion/gitman.bash
-
-This completes gitman subcommands and registered repositories for `run` and `remove`.
+It completes gitman subcommands and registered repositories for `run` and `remove`.
