@@ -27,3 +27,12 @@ Run a command in the cloned repository
 Uninstall and remove
 
 	gitman remove https://github.com/temeteke/vim.git make uninstall
+
+
+## Bash completion
+
+Source the completion script from your Bash configuration:
+
+	source /path/to/gitman/completion/gitman.bash
+
+This completes gitman subcommands and registered repositories for `run` and `remove`.
